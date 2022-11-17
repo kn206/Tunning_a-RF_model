@@ -1,0 +1,50 @@
+---
+title: "randomforest_model"
+author: "Kelvin Nyongesa"
+date: "2022-11-17"
+output: html_document
+---
+
+1.Explore and loading the dataset
+```{r}
+sf_trees<-read.csv("/home/nyongesa/Documents/sf_trees.csv")
+```
+
+```{r}
+sf_trees %>%
+  ggplot(aes(longitude, latitude, color = legal_status)) +
+  geom_point(size = 0.5, alpha = 0.4) +
+  labs(color = NULL)
+```
+
+```{r}
+sf_trees %>%
+  count(legal_status, caretaker) %>%
+  add_count(caretaker, wt = n, name = "caretaker_count") %>%
+  filter(caretaker_count > 50) %>%
+  group_by(legal_status) %>%
+  mutate(percent_legal = n / sum(n)) %>%
+  ggplot(aes(percent_legal, caretaker, fill = legal_status)) +
+  geom_col(position = "dodge") +
+  labs(
+    fill = NULL,
+    x = "% of trees in each category"
+  )
+```
+
+#2. Building the model
+
+```{r}
+library(tidymodels)
+```
+
+
+```{r}
+set.seed(123)
+split_trees<- initial_split(sf_trees,strata=legal_status)
+trees_train <- training(split_trees)
+trees_test <- testing(split_trees)
+```
+
+
+
